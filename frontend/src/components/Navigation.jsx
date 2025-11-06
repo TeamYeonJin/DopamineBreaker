@@ -1,5 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
+import HomeIcon from './icons/HomeIcon'
+import MissionIcon from './icons/MissionIcon'
+import ProfileIcon from './icons/ProfileIcon'
 
 const NavContainer = styled.nav`
   position: fixed;
@@ -16,7 +19,7 @@ const NavContent = styled.div`
   max-width: 480px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   padding: ${props => props.theme.spacing.xs} 0;
 `
 
@@ -55,26 +58,34 @@ const NavLabel = styled.span`
 `
 
 const navItems = [
-  { path: '/', icon: '🏠', label: '홈' },
-  { path: '/mission', icon: '🎯', label: '미션' },
-  { path: '/statistics', icon: '📊', label: '통계' },
-  { path: '/profile', icon: '👤', label: '프로필' },
+  { path: '/', icon: HomeIcon, label: '홈' },
+  { path: '/mission', icon: MissionIcon, label: '미션' },
+  { path: '/profile', icon: ProfileIcon, label: '프로필' },
 ]
 
 function Navigation() {
   return (
     <NavContainer>
       <NavContent>
-        {navItems.map((item) => (
-          <StyledNavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === '/'}
-          >
-            <NavIcon className="nav-icon">{item.icon}</NavIcon>
-            <NavLabel>{item.label}</NavLabel>
-          </StyledNavLink>
-        ))}
+        {navItems.map((item) => {
+          const IconComponent = item.icon
+          return (
+            <StyledNavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/'}
+            >
+              {({ isActive }) => (
+                <>
+                  <NavIcon className="nav-icon">
+                    <IconComponent color={isActive ? '#6C63FF' : '#A7A7A7'} size={24} />
+                  </NavIcon>
+                  <NavLabel>{item.label}</NavLabel>
+                </>
+              )}
+            </StyledNavLink>
+          )
+        })}
       </NavContent>
     </NavContainer>
   )

@@ -6,7 +6,6 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Mission from './pages/Mission'
 import Profile from './pages/Profile'
-import Statistics from './pages/Statistics'
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/mission" element={<Mission />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/statistics" element={<Statistics />} />
         </Routes>
       </Layout>
     </ThemeProvider>
