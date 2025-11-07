@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import MissionTimer from "../components/MissionTimer";
 import DongMedal from "../assets/DongMedal.png";
@@ -35,8 +36,8 @@ const ToggleButton = styled.button`
   font-weight: 600;
   font-size: 14px;
   transition: all 0.15s ease;
-  background-color: ${(props) => (props.active ? "#FFFFFF" : "transparent")};
-  color: ${(props) => (props.active ? "#000000" : "#757575")};
+  background-color: ${(props) => (props.$active ? "#FFFFFF" : "transparent")};
+  color: ${(props) => (props.$active ? "#000000" : "#757575")};
 
   &:hover {
     opacity: 0.8;
@@ -84,8 +85,8 @@ const MissionContent = styled.div`
 const MissionBadge = styled.span`
   display: inline-block;
   font-size: 14px;
-  font-weight: 600;
-  color: ${(props) => props.tierColor};
+  font-weight: 700;
+  color: #333333;
   width: fit-content;
 `;
 
@@ -93,16 +94,17 @@ const MissionDuration = styled.div`
   font-size: 0.85rem;
   font-weight: 450;
   white-space: nowrap;
+  color: #757575;
 `;
 
 const MissionDescription = styled.p`
-  font-size: 14px;
+  font-size: 14.6px;
   color: #757575;
 `;
 
 const MedalIcon = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
 `;
 
@@ -110,6 +112,11 @@ const EmptyState = styled.div`
   text-align: center;
   padding: 48px;
   color: #757575;
+`;
+
+const StatusMessage = styled(EmptyState)`
+  background-color: #ffffff;
+  border-radius: 16px;
 `;
 
 const SuccessOverlay = styled.div`
@@ -183,75 +190,79 @@ const SuccessButton = styled.button`
   }
 `;
 
-const missions = [
-  {
-    id: 1,
-    description: "간단한 목과 어깨 스트레칭으로 긴장을 풀어보세요",
-    duration: 5,
-    tier: "bronze",
-    category: "physical",
-  },
-  {
-    id: 2,
-    description: "깊은 호흡으로 마음을 안정시켜보세요",
-    duration: 10,
-    tier: "bronze",
-    category: "mental",
-  },
-  {
-    id: 3,
-    description: "물 한 잔을 천천히 마시며 수분을 보충하세요",
-    duration: 3,
-    tier: "bronze",
-    category: "health",
-  },
-  {
-    id: 4,
-    description: "좋아하는 책을 읽으며 휴식을 취해보세요",
-    duration: 20,
-    tier: "silver",
-    category: "mental",
-  },
-  {
-    id: 5,
-    description: "밖에 나가서 짧은 산책을 즐겨보세요",
-    duration: 15,
-    tier: "silver",
-    category: "physical",
-  },
-  {
-    id: 6,
-    description: "기본 요가 동작으로 몸과 마음을 정돈하세요",
-    duration: 30,
-    tier: "gold",
-    category: "physical",
-  },
-  {
-    id: 7,
-    description: "긴 시간 동안 집중 명상을 해보세요",
-    duration: 25,
-    tier: "gold",
-    category: "mental",
-  },
-];
-
 const tierConfig = {
-  all: { label: "전체", medal: null },
-  bronze: { label: "브론즈", medal: DongMedal },
-  silver: { label: "실버", medal: EunMedal },
-  gold: { label: "골드", medal: GeumMedal },
+  all: { label: "전체", medal: null, color: "#333333" },
+  bronze: { label: "브론즈", medal: DongMedal, color: "#cd7f32" },
+  silver: { label: "실버", medal: EunMedal, color: "#b0b0b0" },
+  gold: { label: "골드", medal: GeumMedal, color: "#d4af37" },
 };
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+
+const getTierMeta = (tier) => tierConfig[tier] || tierConfig.all;
+const getMissionTitle = (mission) =>
+  mission?.title || mission?.description || "미션";
+
 function Mission() {
+  const location = useLocation();
+  const [missions, setMissions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedTier, setSelectedTier] = useState("all");
   const [activeMission, setActiveMission] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [completedMission, setCompletedMission] = useState(null);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchMissions = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`${API_BASE_URL}/missions/presets`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            "미션을 불러오지 못했어요. 잠시 후 다시 시도해주세요."
+          );
+        }
+
+        const payload = await response.json();
+        const data = Array.isArray(payload) ? payload : payload.missions;
+        setMissions(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setError(err.message || "알 수 없는 오류가 발생했어요.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchMissions();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    // 홈에서 전달된 미션이 있으면 자동 시작
+    if (location.state?.autoStartMission) {
+      setActiveMission(location.state.autoStartMission);
+    }
+  }, [location.state]);
+
   const filteredMissions =
     selectedTier === "all"
       ? missions
       : missions.filter((m) => m.tier === selectedTier);
+  const completedTierMeta = completedMission
+    ? getTierMeta(completedMission.tier)
+    : null;
 
   const handleStartMission = (mission) => {
     setActiveMission(mission);
@@ -292,7 +303,7 @@ function Mission() {
           {Object.entries(tierConfig).map(([tier, config]) => (
             <ToggleButton
               key={tier}
-              active={selectedTier === tier}
+              $active={selectedTier === tier}
               onClick={() => setSelectedTier(tier)}
             >
               {config.label}
@@ -300,40 +311,49 @@ function Mission() {
           ))}
         </ToggleContainer>
 
-        <MissionList>
-          {filteredMissions.length > 0 ? (
-            filteredMissions.map((mission) => (
-              <MissionCard
-                key={mission.id}
-                onClick={() => handleStartMission(mission)}
-              >
-                <MissionHeader>
-                  <MissionTitleSection>
-                    {tierConfig[mission.tier].medal && (
-                      <MedalIcon
-                        src={tierConfig[mission.tier].medal}
-                        alt={`${tierConfig[mission.tier].label} 메달`}
-                      />
-                    )}
-                    <MissionContent>
-                      <MissionBadge tierColor={tierConfig[mission.tier].color}>
-                        {tierConfig[mission.tier].label + " 메달 미션"}
-                      </MissionBadge>
-                      <MissionDescription>
-                        {mission.description}
-                      </MissionDescription>
-                    </MissionContent>
-                  </MissionTitleSection>
-                  <MissionDuration tierColor={tierConfig[mission.tier].color}>
-                    {mission.duration}분
-                  </MissionDuration>
-                </MissionHeader>
-              </MissionCard>
-            ))
-          ) : (
-            <EmptyState>해당 난이도의 미션이 없습니다</EmptyState>
-          )}
-        </MissionList>
+        {isLoading ? (
+          <StatusMessage>미션을 불러오는 중입니다...</StatusMessage>
+        ) : error ? (
+          <StatusMessage>{error}</StatusMessage>
+        ) : (
+          <MissionList>
+            {filteredMissions.length > 0 ? (
+              filteredMissions.map((mission) => {
+                const tierMeta = getTierMeta(mission.tier);
+                return (
+                  <MissionCard
+                    key={mission.id}
+                    onClick={() => handleStartMission(mission)}
+                  >
+                    <MissionHeader>
+                      <MissionTitleSection>
+                        {tierMeta.medal && (
+                          <MedalIcon
+                            src={tierMeta.medal}
+                            alt={`${tierMeta.label} 메달`}
+                          />
+                        )}
+                        <MissionContent>
+                          <MissionBadge tierColor={tierMeta.color}>
+                            {tierMeta.label} 메달 미션
+                          </MissionBadge>
+                          <MissionDescription>
+                            {mission.description}
+                          </MissionDescription>
+                        </MissionContent>
+                      </MissionTitleSection>
+                      <MissionDuration tierColor={tierMeta.color}>
+                        {mission.duration}분
+                      </MissionDuration>
+                    </MissionHeader>
+                  </MissionCard>
+                );
+              })
+            ) : (
+              <EmptyState>해당 난이도의 미션이 없습니다</EmptyState>
+            )}
+          </MissionList>
+        )}
       </MissionContainer>
 
       {showSuccessModal && completedMission && (
@@ -342,14 +362,15 @@ function Mission() {
             <SuccessImage src={MisionSuccess} alt="미션 성공" />
             <SuccessTitle>미션 완료!</SuccessTitle>
             <SuccessMessage>
-              {completedMission.title} 미션을 성공적으로 완료했습니다!
+              {getMissionTitle(completedMission)} 미션을 성공적으로
+              완료했습니다!
               <br />
               {completedMission.duration}분 동안 집중하셨네요!
             </SuccessMessage>
-            {tierConfig[completedMission.tier].medal && (
+            {completedTierMeta?.medal && (
               <MedalIcon
-                src={tierConfig[completedMission.tier].medal}
-                alt={`${tierConfig[completedMission.tier].label} 메달`}
+                src={completedTierMeta.medal}
+                alt={`${completedTierMeta.label} 메달`}
                 style={{ margin: "0 auto 24px" }}
               />
             )}

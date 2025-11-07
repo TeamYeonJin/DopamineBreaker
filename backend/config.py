@@ -9,6 +9,12 @@ class Config:
 
     # CORS configuration
     CORS_HEADERS = 'Content-Type'
+    _raw_cors_origins = os.environ.get(
+        'CORS_ORIGINS',
+        'http://localhost:3000,http://127.0.0.1:3000,'
+        'http://localhost:5173,http://127.0.0.1:5173'
+    )
+    CORS_ORIGINS = [origin.strip() for origin in _raw_cors_origins.split(',') if origin.strip()]
 
 class DevelopmentConfig(Config):
     """개발 환경 설정 - SQLite 사용"""

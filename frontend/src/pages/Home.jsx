@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import DongMedal from "../assets/DongMedal.png";
+import EunMedal from "../assets/EunMedal.png";
+import GeumMedal from "../assets/GeumMedal.png";
 
 const HomeContainer = styled.div`
   max-width: 480px;
@@ -107,28 +110,52 @@ const MissionGrid = styled.div`
 `;
 
 const MissionCardSmall = styled.div`
-  background: ${(props) => props.gradient};
-  padding: 24px;
+  background-color: #ffffff;
+  padding: 20px;
   border-radius: 12px;
-  color: white;
   cursor: pointer;
   transition: transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   &:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   }
 `;
 
+const MedalIcon = styled.img`
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+`;
+
+const MissionInfo = styled.div`
+  flex: 1;
+`;
+
 const MissionTitle = styled.div`
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
+  color: #333333;
   margin-bottom: 4px;
 `;
 
 const MissionDuration = styled.div`
-  font-size: 14px;
-  opacity: 0.9;
+  font-size: 13px;
+  color: #757575;
 `;
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+
+const tierConfig = {
+  bronze: { label: "브론즈", medal: DongMedal },
+  silver: { label: "실버", medal: EunMedal },
+  gold: { label: "골드", medal: GeumMedal },
+};
 
 function Home() {
   const navigate = useNavigate();
@@ -137,6 +164,7 @@ function Home() {
   const [usageData, setUsageData] = useState({
     categories: [],
   });
+  const [quickMissions, setQuickMissions] = useState([]);
 
   useEffect(() => {
     // 현재 날짜 설정
@@ -154,37 +182,27 @@ function Home() {
         { name: "소셜 미디어", time: 107, color: "#FF9F0B" },
       ],
     });
+
+    // 미션 데이터 가져오기
+    const fetchMissions = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/missions/presets`);
+        if (response.ok) {
+          const data = await response.json();
+          const missions = Array.isArray(data) ? data : data.missions;
+          // 최대 4개만 가져오기
+          setQuickMissions(missions.slice(0, 4));
+        }
+      } catch (error) {
+        console.error("미션을 불러오지 못했습니다:", error);
+      }
+    };
+
+    fetchMissions();
   }, []);
 
-  const quickMissions = [
-    {
-      id: 1,
-      title: "스트레칭",
-      duration: "5분",
-      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    },
-    {
-      id: 2,
-      title: "심호흡",
-      duration: "10분",
-      gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    },
-    {
-      id: 3,
-      title: "산책",
-      duration: "15분",
-      gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    },
-    {
-      id: 4,
-      title: "독서",
-      duration: "20분",
-      gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-    },
-  ];
-
-  const handleMissionClick = () => {
-    navigate("/mission");
+  const handleMissionClick = (mission) => {
+    navigate("/mission", { state: { autoStartMission: mission } });
   };
 
   const formatTime = (minutes) => {
@@ -230,16 +248,23 @@ function Home() {
       <Section>
         <SectionTitle>오늘의 미션</SectionTitle>
         <MissionGrid>
-          {quickMissions.map((mission) => (
-            <MissionCardSmall
-              key={mission.id}
-              gradient={mission.gradient}
-              onClick={handleMissionClick}
-            >
-              <MissionTitle>{mission.title}</MissionTitle>
-              <MissionDuration>{mission.duration}</MissionDuration>
-            </MissionCardSmall>
-          ))}
+          {quickMissions.map((mission) => {
+            const tierMeta = tierConfig[mission.tier];
+            return (
+              <MissionCardSmall
+                key={mission.id}
+                onClick={() => handleMissionClick(mission)}
+              >
+                {tierMeta?.medal && (
+                  <MedalIcon src={tierMeta.medal} alt={`${tierMeta.label} 메달`} />
+                )}
+                <MissionInfo>
+                  <MissionTitle>{mission.title || mission.description}</MissionTitle>
+                  <MissionDuration>{mission.duration}분</MissionDuration>
+                </MissionInfo>
+              </MissionCardSmall>
+            );
+          })}
         </MissionGrid>
       </Section>
     </HomeContainer>

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from config import DevelopmentConfig
@@ -12,7 +12,30 @@ def create_app(config_class=DevelopmentConfig):
 
     # Initialize extensions
     db.init_app(app)
-    CORS(app)
+
+    cors_origins = app.config.get('CORS_ORIGINS') or '*'
+    CORS(app, resources={r"/api/*": {"origins": cors_origins}}, supports_credentials=True)
+
+    @app.after_request
+    def apply_custom_cors(response):
+        origin = request.headers.get('Origin')
+        allow_all = cors_origins == '*' or cors_origins == ['*']
+        if origin and (allow_all or origin in cors_origins):
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers.setdefault('Vary', 'Origin')
+        elif allow_all:
+            response.headers['Access-Control-Allow-Origin'] = '*'
+
+        response.headers.setdefault('Access-Control-Allow-Credentials', 'true')
+        response.headers.setdefault(
+            'Access-Control-Allow-Headers',
+            'Content-Type,Authorization'
+        )
+        response.headers.setdefault(
+            'Access-Control-Allow-Methods',
+            'GET,POST,PUT,DELETE,OPTIONS'
+        )
+        return response
 
     # Register blueprints
     from routes.screen_time import screen_time_bp
@@ -39,4 +62,4 @@ if __name__ == '__main__':
     app = create_app()
     with app.app_context():
         db.create_all()  # 데이터베이스 테이블 생성
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

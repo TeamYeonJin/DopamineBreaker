@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from app import db
 from models.mission import Mission, MissionRecord
+from utils.mission_presets import get_mission_presets
 
 missions_bp = Blueprint('missions', __name__)
 
@@ -10,6 +11,12 @@ def get_all_missions():
     """모든 미션 조회"""
     missions = Mission.query.all()
     return jsonify([mission.to_dict() for mission in missions]), 200
+
+
+@missions_bp.route('/presets', methods=['GET'])
+def get_mission_presets_list():
+    """설정 파일에 정의된 미션 프리셋 조회"""
+    return jsonify({'missions': get_mission_presets()}), 200
 
 @missions_bp.route('/<int:mission_id>', methods=['GET'])
 def get_mission(mission_id):
