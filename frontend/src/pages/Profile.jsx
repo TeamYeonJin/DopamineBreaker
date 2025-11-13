@@ -1,202 +1,290 @@
-import { useState, useEffect } from 'react'
-import styled from 'styled-components'
+import { useState, useEffect } from "react";
+import styled from "styled-components";
+import ProfileImg from "../assets/Profile.png";
+import DongMedal from "../assets/DongMedal.png";
+import EunMedal from "../assets/EunMedal.png";
+import GeumMedal from "../assets/GeumMedal.png";
 
 const ProfileContainer = styled.div`
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 24px;
-  padding-bottom: 100px;
-`
+  margin: 0;
+`;
+
+const Header = styled.div`
+  padding: 48px 32px 8px 32px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 28px;
+  line-height: 1.4;
+`;
 
 const ProfileHeader = styled.div`
-  text-align: center;
-  padding: 32px 0;
-  margin-bottom: 32px;
-`
-
-const Avatar = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  margin: 0 auto 16px;
-`
+  padding: 0px 32px 0px 32px;
+  margin-bottom: 32px;
+`;
+
+const Avatar = styled.img`
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 16px;
+  flex-shrink: 0;
+`;
+
+const Section = styled.section`
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 36px 28px;
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
 
 const UserName = styled.h1`
   font-size: 24px;
   font-weight: 700;
   color: #333333;
-`
+  margin: 0;
+`;
+
+const UserId = styled.p`
+  font-size: 15px;
+  color: #333333;
+  font-weight: 500;
+  margin: 0;
+`;
 
 const MedalSection = styled.section`
   margin-bottom: 48px;
-`
+`;
 
 const SectionTitle = styled.h2`
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
   color: #333333;
-  margin-bottom: 16px;
-`
+  margin-bottom: 22px;
+`;
 
 const MedalGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
 
 const MedalCard = styled.div`
-  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  text-align: center;
-`
+  cursor: pointer;
+  transition: all 0.15s ease;
 
-const MedalIcon = styled.div`
-  font-size: 2.5rem;
-  margin-bottom: 8px;
-`
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
+const MedalImageIcon = styled.img`
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+`;
+
+const MedalTextInfo = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 4px;
+`;
 
 const MedalCount = styled.div`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${props => props.medalColor};
-  margin-bottom: 4px;
-`
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+  line-height: 1.4;
+`;
 
 const MedalLabel = styled.div`
-  font-size: 12px;
-  color: #757575;
-`
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+  line-height: 1.4;
+`;
 
-const RecentMissions = styled.section``
+const ArrowIcon = styled.span`
+  font-family: "Font Awesome 5 Pro";
+  font-weight: 400;
+  font-size: 28px;
+  color: #333333;
+  cursor: pointer;
+`;
+
+const RecentMissions = styled.section``;
 
 const MissionList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-`
+`;
 
 const MissionItem = styled.div`
-  background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  padding: 20px;
   display: flex;
-  justify-content: space-between;
+  gap: 16px;
   align-items: center;
-`
+`;
 
-const MissionInfo = styled.div`
+const MissionMedalIcon = styled.img`
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+`;
+
+const MissionContent = styled.div`
   flex: 1;
-`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
 
 const MissionTitle = styled.div`
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 700;
   color: #333333;
-  margin-bottom: 4px;
-`
+`;
 
-const MissionDate = styled.div`
-  font-size: 14px;
+const MissionDescription = styled.p`
+  font-size: 14.6px;
   color: #757575;
-`
+`;
 
-const MissionBadge = styled.div`
-  padding: 4px 16px;
-  border-radius: 8px;
-  background-color: ${props => props.tierColor}20;
-  color: ${props => props.tierColor};
-  font-size: 14px;
-  font-weight: 500;
-`
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 const tierConfig = {
-  bronze: { label: '브론즈', color: '#CD7F32', icon: '🥉' },
-  silver: { label: '실버', color: '#C0C0C0', icon: '🥈' },
-  gold: { label: '골드', color: '#FFD700', icon: '🥇' },
-}
+  bronze: { label: "브론즈", color: "#CD7F32", medal: DongMedal },
+  silver: { label: "실버", color: "#C0C0C0", medal: EunMedal },
+  gold: { label: "골드", color: "#FFD700", medal: GeumMedal },
+};
 
 function Profile() {
-  const [userName] = useState('사용자')
+  const [userName] = useState("사용자");
+  const [userId] = useState("@user1234");
   const [medalStats, setMedalStats] = useState({
     bronze: 0,
     silver: 0,
-    gold: 0
-  })
-  const [recentMissions, setRecentMissions] = useState([])
+    gold: 0,
+  });
+  const [recentMissions, setRecentMissions] = useState([]);
 
   useEffect(() => {
-    // TODO: API에서 데이터 가져오기
-    // 임시 데이터
-    setMedalStats({
-      bronze: 12,
-      silver: 5,
-      gold: 0
-    })
+    const fetchMedals = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/missions/medals`);
+        const data = await response.json();
+        setMedalStats(data.medals);
+      } catch (error) {
+        console.error("메달 정보를 불러오지 못했습니다:", error);
+        // 임시 데이터 사용
+        setMedalStats({
+          bronze: 12,
+          silver: 5,
+          gold: 0,
+        });
+      }
+    };
 
-    setRecentMissions([
-      { id: 1, title: '스트레칭 타임', date: '2024-11-06', tier: 'bronze' },
-      { id: 2, title: '심호흡 명상', date: '2024-11-06', tier: 'bronze' },
-      { id: 3, title: '독서 시간', date: '2024-11-05', tier: 'silver' },
-      { id: 4, title: '산책하기', date: '2024-11-05', tier: 'silver' },
-      { id: 5, title: '물 마시기', date: '2024-11-04', tier: 'bronze' },
-    ])
-  }, [])
+    const fetchRecentMissions = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/missions/recent?limit=5`);
+        const data = await response.json();
+        setRecentMissions(data.missions);
+      } catch (error) {
+        console.error("최근 미션을 불러오지 못했습니다:", error);
+        // 임시 데이터 사용
+        setRecentMissions([
+          {
+            id: 1,
+            title: "스트레칭 타임",
+            description: "간단한 목과 어깨 스트레칭으로 긴장을 풀어보세요",
+            tier: "bronze",
+          },
+          {
+            id: 2,
+            title: "심호흡 명상",
+            description: "깊은 호흡으로 마음을 안정시켜보세요",
+            tier: "bronze",
+          },
+          {
+            id: 3,
+            title: "독서 시간",
+            description: "좋아하는 책을 읽으며 휴식을 취해보세요",
+            tier: "silver",
+          },
+        ]);
+      }
+    };
 
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr)
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    return `${month}월 ${day}일`
-  }
+    fetchMedals();
+    fetchRecentMissions();
+  }, []);
 
   return (
     <ProfileContainer>
+      <Header>프로필</Header>
       <ProfileHeader>
-        <Avatar>👤</Avatar>
-        <UserName>{userName}</UserName>
+        <Avatar src={ProfileImg} alt="프로필" />
+        <UserInfo>
+          <UserName>{userName}</UserName>
+          <UserId>{userId}</UserId>
+        </UserInfo>
       </ProfileHeader>
+      <Section>
+        <MedalSection>
+          <SectionTitle>획득한 메달</SectionTitle>
+          <MedalGrid>
+            {Object.entries(tierConfig).map(([tier, config]) => (
+              <MedalCard key={tier}>
+                <MedalImageIcon src={config.medal} alt={config.label} />
+                <MedalTextInfo>
+                  <MedalCount>{medalStats[tier]}개의</MedalCount>
+                  <MedalLabel>{config.label} 메달 획득</MedalLabel>
+                </MedalTextInfo>
+                <ArrowIcon>›</ArrowIcon>
+              </MedalCard>
+            ))}
+          </MedalGrid>
+        </MedalSection>
 
-      <MedalSection>
-        <SectionTitle>획득한 메달</SectionTitle>
-        <MedalGrid>
-          {Object.entries(tierConfig).map(([tier, config]) => (
-            <MedalCard key={tier}>
-              <MedalIcon>{config.icon}</MedalIcon>
-              <MedalCount medalColor={config.color}>
-                {medalStats[tier]}개
-              </MedalCount>
-              <MedalLabel>{config.label} 메달 획득</MedalLabel>
-            </MedalCard>
-          ))}
-        </MedalGrid>
-      </MedalSection>
-
-      <RecentMissions>
-        <SectionTitle>최근 클리어한 미션</SectionTitle>
-        <MissionList>
-          {recentMissions.map(mission => (
-            <MissionItem key={mission.id}>
-              <MissionInfo>
-                <MissionTitle>{mission.title}</MissionTitle>
-                <MissionDate>{formatDate(mission.date)}</MissionDate>
-              </MissionInfo>
-              <MissionBadge tierColor={tierConfig[mission.tier].color}>
-                {tierConfig[mission.tier].label}
-              </MissionBadge>
-            </MissionItem>
-          ))}
-        </MissionList>
-      </RecentMissions>
+        <RecentMissions>
+          <SectionTitle>최근 클리어한 미션</SectionTitle>
+          <MissionList>
+            {recentMissions.map((mission) => (
+              <MissionItem key={mission.id}>
+                <MissionMedalIcon
+                  src={tierConfig[mission.tier].medal}
+                  alt={tierConfig[mission.tier].label}
+                />
+                <MissionContent>
+                  <MissionTitle>{mission.title}</MissionTitle>
+                  <MissionDescription>{mission.description}</MissionDescription>
+                </MissionContent>
+              </MissionItem>
+            ))}
+          </MissionList>
+        </RecentMissions>
+      </Section>
     </ProfileContainer>
-  )
+  );
 }
 
-export default Profile
+export default Profile;

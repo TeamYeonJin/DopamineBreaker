@@ -26,12 +26,12 @@ const ToggleContainer = styled.div`
   display: flex;
   border-radius: 16px;
   padding: 4px;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 `;
 
 const ToggleButton = styled.button`
   flex: 1;
-  padding: 16px;
+  padding: 12px;
   border-radius: 20px;
   font-weight: 600;
   font-size: 14px;
@@ -268,20 +268,61 @@ function Mission() {
     setActiveMission(mission);
   };
 
-  const handleCompleteMission = () => {
-    // TODO: API로 미션 완료 기록 전송
-    setCompletedMission(activeMission);
-    setActiveMission(null);
-    setShowSuccessModal(true);
+  const handleCompleteMission = async () => {
+    try {
+      // API로 미션 완료 기록 전송
+      const response = await fetch(
+        `${API_BASE_URL}/missions/presets/complete`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            preset_mission_id: activeMission.id,
+            tier: activeMission.tier,
+            title: activeMission.title || activeMission.description,
+            description: activeMission.description,
+            duration: activeMission.duration,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("미션 완료 기록에 실패했습니다.");
+      }
+
+      setCompletedMission(activeMission);
+      setActiveMission(null);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("미션 완료 처리 중 오류:", error);
+      // 오류가 발생해도 UI는 업데이트
+      setCompletedMission(activeMission);
+      setActiveMission(null);
+      setShowSuccessModal(true);
+    }
   };
 
   const handleCancelMission = () => {
     setActiveMission(null);
   };
 
-  const handleCloseSuccessModal = () => {
+  const handleCloseSuccessModal = async () => {
     setShowSuccessModal(false);
     setCompletedMission(null);
+
+    // 완료된 미션이 목록에서 사라지도록 미션 목록 다시 불러오기
+    try {
+      const response = await fetch(`${API_BASE_URL}/missions/presets`);
+      if (response.ok) {
+        const payload = await response.json();
+        const data = Array.isArray(payload) ? payload : payload.missions;
+        setMissions(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error("미션 목록 새로고침 실패:", error);
+    }
   };
 
   if (activeMission) {

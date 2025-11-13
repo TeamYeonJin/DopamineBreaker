@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, date
-from app import db
+from database import db
 from models.screen_time import ScreenTime
 
 screen_time_bp = Blueprint('screen_time', __name__)

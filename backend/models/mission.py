@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from database import db
 
 class Mission(db.Model):
     __tablename__ = 'missions'
@@ -34,7 +34,11 @@ class MissionRecord(db.Model):
     __tablename__ = 'mission_records'
 
     id = db.Column(db.Integer, primary_key=True)
-    mission_id = db.Column(db.Integer, db.ForeignKey('missions.id'), nullable=False)
+    mission_id = db.Column(db.Integer, db.ForeignKey('missions.id'), nullable=True)
+    preset_mission_id = db.Column(db.Integer, nullable=True)  # 프리셋 미션 ID
+    tier = db.Column(db.String(20), nullable=True)  # bronze, silver, gold
+    title = db.Column(db.String(100), nullable=True)  # 프리셋 미션 제목
+    description = db.Column(db.Text, nullable=True)  # 프리셋 미션 설명
     completed_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     actual_duration = db.Column(db.Integer)  # 실제 소요 시간 (분)
     notes = db.Column(db.Text)
@@ -46,6 +50,10 @@ class MissionRecord(db.Model):
         return {
             'id': self.id,
             'mission_id': self.mission_id,
+            'preset_mission_id': self.preset_mission_id,
+            'tier': self.tier,
+            'title': self.title,
+            'description': self.description,
             'mission': self.mission.to_dict() if self.mission else None,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None,
             'actual_duration': self.actual_duration,

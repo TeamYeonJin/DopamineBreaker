@@ -31,6 +31,21 @@ const SectionTitle = styled.p`
   margin-bottom: 16px;
 `;
 
+const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const ViewAllButton = styled.button`
+  font-family: "Font Awesome 5 Pro";
+  font-weight: 500;
+  font-size: 28px;
+  color: #333333;
+  cursor: pointer;
+`;
+
 const Section = styled.section`
   margin-bottom: 48px;
 `;
@@ -261,7 +276,12 @@ function Home() {
       </Section>
 
       <Section>
-        <SectionTitle>오늘의 미션</SectionTitle>
+        <SectionHeader>
+          <SectionTitle style={{ marginBottom: 0 }}>오늘의 미션</SectionTitle>
+          <ViewAllButton onClick={() => navigate("/mission")}>
+            {">"}
+          </ViewAllButton>
+        </SectionHeader>
         <MissionGrid>
           {quickMissions.map((mission) => {
             const tierMeta = tierConfig[mission.tier];

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from datetime import datetime, timedelta, date
 from sqlalchemy import func
-from app import db
+from database import db
 from models.screen_time import ScreenTime
 from models.mission import MissionRecord
 

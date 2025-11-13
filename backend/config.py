@@ -7,6 +7,9 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Gemini API configuration
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY') or 'AIzaSyDEjMJb6iAvb7uUjo-2N5YoqnuqAV1Hwus'
+
     # CORS configuration
     CORS_HEADERS = 'Content-Type'
     _raw_cors_origins = os.environ.get(
