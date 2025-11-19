@@ -173,7 +173,7 @@ const MissionDescription = styled.p`
 
 const LogoutButton = styled.button`
   width: 100%;
-  margin-top: 24px;
+  margin-top: 48px;
   padding: 16px;
   background-color: #f5f5f5;
   color: #333333;
@@ -194,8 +194,7 @@ const LogoutButton = styled.button`
   }
 `;
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_BASE_URL = "/api"; // Vite proxy 사용
 
 const tierConfig = {
   bronze: { label: "브론즈", color: "#CD7F32", medal: DongMedal },

@@ -9,11 +9,9 @@ statistics_bp = Blueprint('statistics', __name__)
 
 @statistics_bp.route('/weekly', methods=['GET'])
 def get_weekly_statistics():
-    """주간 통계"""
     today = date.today()
     week_ago = today - timedelta(days=7)
 
-    # 일별 스크린타임 집계
     screen_time_data = db.session.query(
         ScreenTime.date,
         func.sum(ScreenTime.usage_time).label('total_time')
@@ -22,7 +20,6 @@ def get_weekly_statistics():
         ScreenTime.date <= today
     ).group_by(ScreenTime.date).all()
 
-    # 일별 디톡스 시간 집계
     detox_data = db.session.query(
         func.date(MissionRecord.completed_at).label('date'),
         func.sum(MissionRecord.actual_duration).label('total_time')
@@ -31,7 +28,6 @@ def get_weekly_statistics():
         func.date(MissionRecord.completed_at) <= today
     ).group_by(func.date(MissionRecord.completed_at)).all()
 
-    # 데이터 결합
     screen_time_dict = {str(record.date): record.total_time for record in screen_time_data}
     detox_dict = {str(record.date): record.total_time for record in detox_data}
 
@@ -50,11 +46,9 @@ def get_weekly_statistics():
 
 @statistics_bp.route('/monthly', methods=['GET'])
 def get_monthly_statistics():
-    """월간 통계"""
     today = date.today()
     month_ago = today - timedelta(days=30)
 
-    # 월간 스크린타임 총합
     total_screen_time = db.session.query(
         func.sum(ScreenTime.usage_time)
     ).filter(
@@ -62,13 +56,11 @@ def get_monthly_statistics():
         ScreenTime.date <= today
     ).scalar() or 0
 
-    # 월간 완료 미션 수
     total_missions = MissionRecord.query.filter(
         func.date(MissionRecord.completed_at) >= month_ago,
         func.date(MissionRecord.completed_at) <= today
     ).count()
 
-    # 월간 디톡스 시간 총합
     total_detox_time = db.session.query(
         func.sum(MissionRecord.actual_duration)
     ).filter(
@@ -85,16 +77,10 @@ def get_monthly_statistics():
 
 @statistics_bp.route('/overall', methods=['GET'])
 def get_overall_statistics():
-    """전체 통계"""
-    # 총 미션 수
     total_missions = MissionRecord.query.count()
-
-    # 총 디톡스 시간
     total_detox_time = db.session.query(
         func.sum(MissionRecord.actual_duration)
     ).scalar() or 0
-
-    # 연속 기록 계산
     records = db.session.query(
         func.date(MissionRecord.completed_at).label('date')
     ).group_by(func.date(MissionRecord.completed_at)).order_by(

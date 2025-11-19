@@ -6,22 +6,17 @@ achievements_bp = Blueprint('achievements', __name__)
 
 @achievements_bp.route('', methods=['GET'])
 def get_all_achievements():
-    """모든 업적 조회"""
     achievements = Achievement.query.all()
     return jsonify([achievement.to_dict() for achievement in achievements]), 200
 
 @achievements_bp.route('/<int:achievement_id>', methods=['GET'])
 def get_achievement(achievement_id):
-    """특정 업적 조회"""
     achievement = Achievement.query.get_or_404(achievement_id)
     return jsonify(achievement.to_dict()), 200
 
 @achievements_bp.route('/user', methods=['GET'])
 def get_user_achievements():
-    """사용자가 달성한 업적 조회"""
     user_achievements = UserAchievement.query.all()
-
-    # 모든 업적과 사용자 달성 여부 결합
     all_achievements = Achievement.query.all()
     unlocked_ids = {ua.achievement_id for ua in user_achievements}
 
@@ -38,10 +33,7 @@ def get_user_achievements():
 
 @achievements_bp.route('/<int:achievement_id>/unlock', methods=['POST'])
 def unlock_achievement(achievement_id):
-    """업적 달성"""
     achievement = Achievement.query.get_or_404(achievement_id)
-
-    # 이미 달성했는지 확인
     existing = UserAchievement.query.filter_by(achievement_id=achievement_id).first()
     if existing:
         return jsonify({'message': 'Achievement already unlocked', 'achievement': existing.to_dict()}), 200

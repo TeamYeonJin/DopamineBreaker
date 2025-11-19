@@ -7,7 +7,6 @@ class DailyMission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False, unique=True, index=True)
 
-    # Bronze tier missions (3개)
     bronze_1_title = db.Column(db.String(100), nullable=False)
     bronze_1_description = db.Column(db.Text, nullable=False)
     bronze_1_duration = db.Column(db.Integer, nullable=False)
@@ -28,7 +27,6 @@ class DailyMission(db.Model):
     bronze_5_description = db.Column(db.Text, nullable=False)
     bronze_5_duration = db.Column(db.Integer, nullable=False)
 
-    # Silver tier missions (5개)
     silver_1_title = db.Column(db.String(100), nullable=False)
     silver_1_description = db.Column(db.Text, nullable=False)
     silver_1_duration = db.Column(db.Integer, nullable=False)
@@ -49,7 +47,6 @@ class DailyMission(db.Model):
     silver_5_description = db.Column(db.Text, nullable=False)
     silver_5_duration = db.Column(db.Integer, nullable=False)
 
-    # Gold tier missions (3개)
     gold_1_title = db.Column(db.String(100), nullable=False)
     gold_1_description = db.Column(db.Text, nullable=False)
     gold_1_duration = db.Column(db.Integer, nullable=False)
@@ -68,7 +65,6 @@ class DailyMission(db.Model):
         return f'<DailyMission {self.date}>'
 
     def to_mission_list(self):
-        """프리셋 형식의 미션 리스트로 변환"""
         return [
             {'id': 1, 'title': self.bronze_1_title, 'description': self.bronze_1_description, 'duration': self.bronze_1_duration, 'tier': 'bronze', 'category': 'ai_generated'},
             {'id': 2, 'title': self.bronze_2_title, 'description': self.bronze_2_description, 'duration': self.bronze_2_duration, 'tier': 'bronze', 'category': 'ai_generated'},

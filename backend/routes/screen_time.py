@@ -7,7 +7,6 @@ screen_time_bp = Blueprint('screen_time', __name__)
 
 @screen_time_bp.route('/today', methods=['GET'])
 def get_today_screen_time():
-    """오늘의 스크린타임 조회"""
     today = date.today()
     records = ScreenTime.query.filter_by(date=today).all()
 
@@ -22,7 +21,6 @@ def get_today_screen_time():
 
 @screen_time_bp.route('/range', methods=['GET'])
 def get_screen_time_by_range():
-    """기간별 스크린타임 조회"""
     start_date = request.args.get('startDate')
     end_date = request.args.get('endDate')
 
@@ -48,7 +46,6 @@ def get_screen_time_by_range():
 
 @screen_time_bp.route('', methods=['POST'])
 def record_screen_time():
-    """스크린타임 기록"""
     data = request.get_json()
 
     if not data or 'app_name' not in data or 'usage_time' not in data:

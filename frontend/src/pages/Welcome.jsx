@@ -42,7 +42,7 @@ const ButtonSection = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 `;
 
 const PrimaryButton = styled.button`
@@ -66,9 +66,9 @@ const LoginContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  margin-top: 6px;
-  margin-bottom: 44px;
+  gap: 6px;
+  margin-top: 2px;
+  margin-bottom: 32px;
 `;
 
 const LoginText = styled.span`

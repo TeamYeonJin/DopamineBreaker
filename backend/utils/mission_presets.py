@@ -59,5 +59,4 @@ MISSIONS = [
 
 
 def get_mission_presets():
-    """Return the editable preset mission list."""
     return MISSIONS

@@ -75,8 +75,8 @@ def create_app(config_class=DevelopmentConfig):
     # 스케줄러 설정 (매일 자정에 AI 미션 생성)
     scheduler = BackgroundScheduler()
 
+    # 스케줄된 미션 생성 작업
     def scheduled_mission_generation():
-        """스케줄된 미션 생성 작업"""
         with app.app_context():
             from services.ai_mission_generator import generate_and_save_daily_missions
             generate_and_save_daily_missions()

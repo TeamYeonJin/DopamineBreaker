@@ -178,8 +178,7 @@ const MedalIcon = styled.img`
   object-fit: contain;
 `;
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_BASE_URL = "/api"; // Vite proxy 사용
 
 const tierConfig = {
   bronze: { label: "브론즈", medal: DongMedal },

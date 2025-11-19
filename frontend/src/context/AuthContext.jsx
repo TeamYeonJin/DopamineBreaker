@@ -2,8 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext(null);
-
-const API_URL = 'http://localhost:5001/api'; // 백엔드 API 주소
+const API_URL = '/api'; // Vite proxy를 통해 백엔드로 라우팅됨
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

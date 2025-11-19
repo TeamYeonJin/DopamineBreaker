@@ -11,13 +11,12 @@ const MissionContainer = styled.div`
   max-width: 480px;
   margin: 0 auto;
   padding: 24px;
-  padding-bottom: 100px;
 `;
 
 const PageTitle = styled.h1`
   margin-top: 32px;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 600;
   color: #333333;
   margin-bottom: 32px;
 `;
@@ -202,8 +201,7 @@ const tierConfig = {
   gold: { label: "골드", medal: GeumMedal, color: "#d4af37" },
 };
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_BASE_URL = "/api"; // Vite proxy 사용
 
 const getTierMeta = (tier) => tierConfig[tier] || tierConfig.all;
 const getMissionTitle = (mission) =>
@@ -306,8 +304,39 @@ function Mission() {
     }
   };
 
-  const handleCancelMission = () => {
-    setActiveMission(null);
+  const handleCancelMission = async () => {
+    try {
+      // 미션 실패/취소 기록
+      await fetch(`${API_BASE_URL}/missions/presets/fail`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          preset_mission_id: activeMission.id,
+          tier: activeMission.tier,
+          title: activeMission.title || activeMission.description,
+          description: activeMission.description,
+        }),
+      });
+    } catch (error) {
+      console.error("미션 실패 기록 중 오류:", error);
+    } finally {
+      // 오류 여부와 관계없이 미션 취소
+      setActiveMission(null);
+
+      // 미션 목록 새로고침 (실패한 미션 제거)
+      try {
+        const response = await fetch(`${API_BASE_URL}/missions/presets`);
+        if (response.ok) {
+          const payload = await response.json();
+          const data = Array.isArray(payload) ? payload : payload.missions;
+          setMissions(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error("미션 목록 새로고침 실패:", error);
+      }
+    }
   };
 
   const handleCloseSuccessModal = async () => {
