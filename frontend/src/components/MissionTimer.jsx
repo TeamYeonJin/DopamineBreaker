@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
+import { formatTimeToMMSS, getMissionTitle, requestNotificationPermission, sendNotification } from "../utils/helpers";
 
 const TimerContainer = styled.div`
   display: flex;
@@ -134,41 +135,27 @@ const Overlay = styled.div`
 `;
 
 function MissionTimer({ mission, onComplete, onCancel }) {
-  const [timeLeft, setTimeLeft] = useState(mission.duration * 60); // 초 단위로 변환
+  const [timeLeft, setTimeLeft] = useState(mission.duration * 60);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showFocusAlert, setShowFocusAlert] = useState(false);
   const intervalRef = useRef(null);
-  const missionTitle = mission.title || mission.description || "미션";
+  const missionTitle = getMissionTitle(mission);
 
   useEffect(() => {
-    // 타이머 시작
+    requestNotificationPermission();
+
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
           setIsCompleted(true);
-          // 브라우저 알림
-          if (
-            "Notification" in window &&
-            Notification.permission === "granted"
-          ) {
-            new Notification("미션 완료!", {
-              body: `${missionTitle} 미션을 완료했습니다!`,
-              icon: "/icon.png",
-            });
-          }
+          sendNotification("미션 완료!", `${missionTitle} 미션을 완료했습니다!`);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    // 알림 권한 요청
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-
-    // 페이지 이탈 감지
     const handleVisibilityChange = () => {
       if (document.hidden && !isCompleted) {
         setShowFocusAlert(true);
@@ -183,14 +170,6 @@ function MissionTimer({ mission, onComplete, onCancel }) {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [missionTitle, isCompleted]);
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
 
   const handleComplete = () => {
     clearInterval(intervalRef.current);
@@ -208,7 +187,7 @@ function MissionTimer({ mission, onComplete, onCancel }) {
         <MissionTitle>{missionTitle}</MissionTitle>
 
         <TimerDisplay>
-          <Time>{formatTime(timeLeft)}</Time>
+          <Time>{formatTimeToMMSS(timeLeft)}</Time>
         </TimerDisplay>
 
         <MissionDescription>{mission.description}</MissionDescription>

@@ -11,12 +11,9 @@ def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Initialize extensions
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
-
-    # JWT error handlers
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
         app.logger.warning(f'토큰 만료: {jwt_payload}')
@@ -39,6 +36,7 @@ def create_app(config_class=DevelopmentConfig):
     def apply_custom_cors(response):
         origin = request.headers.get('Origin')
         allow_all = cors_origins == '*' or cors_origins == ['*']
+
         if origin and (allow_all or origin in cors_origins):
             response.headers['Access-Control-Allow-Origin'] = origin
             response.headers.setdefault('Vary', 'Origin')
@@ -50,18 +48,10 @@ def create_app(config_class=DevelopmentConfig):
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
         response.headers['Access-Control-Max-Age'] = '3600'
         return response
-
-    # Register blueprints
-    from routes.screen_time import screen_time_bp
     from routes.missions import missions_bp
-    from routes.statistics import statistics_bp
-    from routes.achievements import achievements_bp
     from routes.auth import auth_bp
 
-    app.register_blueprint(screen_time_bp, url_prefix='/api/screen-time')
     app.register_blueprint(missions_bp, url_prefix='/api/missions')
-    app.register_blueprint(statistics_bp, url_prefix='/api/statistics')
-    app.register_blueprint(achievements_bp, url_prefix='/api/achievements')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
     @app.route('/')
@@ -72,16 +62,13 @@ def create_app(config_class=DevelopmentConfig):
     def health():
         return {'status': 'healthy'}
 
-    # 스케줄러 설정 (매일 자정에 AI 미션 생성)
     scheduler = BackgroundScheduler()
 
-    # 스케줄된 미션 생성 작업
     def scheduled_mission_generation():
         with app.app_context():
             from services.ai_mission_generator import generate_and_save_daily_missions
             generate_and_save_daily_missions()
 
-    # 매일 오전 0시 1분에 새로운 미션 생성
     scheduler.add_job(
         func=scheduled_mission_generation,
         trigger=CronTrigger(hour=0, minute=1),
@@ -91,8 +78,6 @@ def create_app(config_class=DevelopmentConfig):
     )
 
     scheduler.start()
-
-    # 앱 종료 시 스케줄러도 종료
     atexit.register(lambda: scheduler.shutdown())
 
     return app
@@ -100,9 +85,8 @@ def create_app(config_class=DevelopmentConfig):
 if __name__ == '__main__':
     app = create_app()
     with app.app_context():
-        db.create_all()  # 데이터베이스 테이블 생성
+        db.create_all()
 
-        # 앱 시작 시 오늘 미션이 없으면 즉시 생성
         from services.ai_mission_generator import generate_and_save_daily_missions
         from models.daily_mission import DailyMission
         from datetime import datetime

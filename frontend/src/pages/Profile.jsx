@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useAuth } from "../context/AuthContext";
 import ProfileImg from "../assets/Profile.png";
-import DongMedal from "../assets/DongMedal.png";
-import EunMedal from "../assets/EunMedal.png";
-import GeumMedal from "../assets/GeumMedal.png";
+import { TIER_CONFIG } from "../constants";
+import { missionApi } from "../services/api";
 
 const ProfileContainer = styled.div`
   width: 100%;
@@ -194,14 +193,6 @@ const LogoutButton = styled.button`
   }
 `;
 
-const API_BASE_URL = "/api"; // Vite proxy 사용
-
-const tierConfig = {
-  bronze: { label: "브론즈", color: "#CD7F32", medal: DongMedal },
-  silver: { label: "실버", color: "#C0C0C0", medal: EunMedal },
-  gold: { label: "골드", color: "#FFD700", medal: GeumMedal },
-};
-
 function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -211,8 +202,6 @@ function Profile() {
     gold: 0,
   });
   const [recentMissions, setRecentMissions] = useState([]);
-
-  // 사용자 정보 기본값 설정
   const userName = user?.username || "사용자";
   const userId = user?.email || "@user";
 
@@ -222,49 +211,24 @@ function Profile() {
   };
 
   useEffect(() => {
-    const fetchMedals = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/missions/medals`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        const data = await response.json();
-        setMedalStats(data.medals);
-      } catch (error) {
-        console.error("메달 정보를 불러오지 못했습니다:", error);
-        // 오류 시 0으로 초기화
-        setMedalStats({
-          bronze: 0,
-          silver: 0,
-          gold: 0,
-        });
-      }
-    };
+    if (!user) return;
 
-    const fetchRecentMissions = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/missions/recent?limit=5`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await response.json();
-        setRecentMissions(data.missions);
+        const [medalsData, recentData] = await Promise.all([
+          missionApi.getMedals(),
+          missionApi.getRecent(5),
+        ]);
+        setMedalStats(medalsData.medals);
+        setRecentMissions(recentData);
       } catch (error) {
-        console.error("최근 미션을 불러오지 못했습니다:", error);
+        console.error("데이터 불러오기 실패:", error);
+        setMedalStats({ bronze: 0, silver: 0, gold: 0 });
         setRecentMissions([]);
       }
     };
 
-    // 사용자 정보가 로드된 후에만 데이터 가져오기
-    if (user) {
-      fetchMedals();
-      fetchRecentMissions();
-    }
+    fetchData();
   }, [user]);
 
   return (
@@ -281,7 +245,7 @@ function Profile() {
         <MedalSection>
           <SectionTitle>획득한 메달</SectionTitle>
           <MedalGrid>
-            {Object.entries(tierConfig).map(([tier, config]) => (
+            {Object.entries(TIER_CONFIG).filter(([tier]) => tier !== 'all').map(([tier, config]) => (
               <MedalCard key={tier}>
                 <MedalImageIcon src={config.medal} alt={config.label} />
                 <MedalTextInfo>
@@ -298,24 +262,25 @@ function Profile() {
           <SectionTitle>최근 클리어한 미션</SectionTitle>
           <MissionList>
             {recentMissions.length > 0 ? (
-              recentMissions.map((mission) => (
-                <MissionItem key={mission.id}>
-                  <MissionMedalIcon
-                    src={tierConfig[mission.tier]?.medal || DongMedal}
-                    alt={tierConfig[mission.tier]?.label || "메달"}
-                  />
-                  <MissionContent>
-                    <MissionTitle>{mission.title}</MissionTitle>
-                    <MissionDescription>
-                      {mission.description}
-                    </MissionDescription>
-                  </MissionContent>
-                </MissionItem>
-              ))
+              recentMissions.map((mission) => {
+                const tierMeta = TIER_CONFIG[mission.tier];
+                return (
+                  <MissionItem key={mission.id}>
+                    <MissionMedalIcon
+                      src={tierMeta?.medal}
+                      alt={tierMeta?.label || "메달"}
+                    />
+                    <MissionContent>
+                      <MissionTitle>{mission.title}</MissionTitle>
+                      <MissionDescription>
+                        {mission.description}
+                      </MissionDescription>
+                    </MissionContent>
+                  </MissionItem>
+                );
+              })
             ) : (
-              <MissionDescription
-                style={{ textAlign: "center", padding: "20px" }}
-              >
+              <MissionDescription style={{ textAlign: "center", padding: "20px" }}>
                 아직 클리어한 미션이 없습니다.
               </MissionDescription>
             )}

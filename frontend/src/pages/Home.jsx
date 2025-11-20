@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import DongMedal from "../assets/DongMedal.png";
-import EunMedal from "../assets/EunMedal.png";
-import GeumMedal from "../assets/GeumMedal.png";
+import { TIER_CONFIG } from "../constants";
+import { formatTime } from "../utils/helpers";
+import { missionApi } from "../services/api";
 
 const HomeContainer = styled.div`
   max-width: 480px;
@@ -179,14 +179,6 @@ const MedalIcon = styled.img`
   object-fit: contain;
 `;
 
-const API_BASE_URL = "/api"; // Vite proxy 사용
-
-const tierConfig = {
-  bronze: { label: "브론즈", medal: DongMedal },
-  silver: { label: "실버", medal: EunMedal },
-  gold: { label: "골드", medal: GeumMedal },
-};
-
 function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -198,14 +190,9 @@ function Home() {
   const [quickMissions, setQuickMissions] = useState([]);
 
   useEffect(() => {
-    // 현재 날짜 설정
     const date = new Date();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    setCurrentDate(`${month}월 ${day}일`);
+    setCurrentDate(`${date.getMonth() + 1}월 ${date.getDate()}일`);
 
-    // TODO: API에서 사용 기록 가져오기
-    // 임시 데이터
     setUsageData({
       categories: [
         { name: "엔터테인먼트", time: 150, color: "#0B84FF" },
@@ -214,16 +201,10 @@ function Home() {
       ],
     });
 
-    // 미션 데이터 가져오기
     const fetchMissions = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/missions/presets`);
-        if (response.ok) {
-          const data = await response.json();
-          const missions = Array.isArray(data) ? data : data.missions;
-          // 최대 4개만 가져오기
-          setQuickMissions(missions.slice(0, 4));
-        }
+        const data = await missionApi.getPresets();
+        setQuickMissions(data.slice(0, 4));
       } catch (error) {
         console.error("미션을 불러오지 못했습니다:", error);
       }
@@ -234,12 +215,6 @@ function Home() {
 
   const handleMissionClick = (mission) => {
     navigate("/mission", { state: { autoStartMission: mission } });
-  };
-
-  const formatTime = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}시간 ${mins}분` : `${mins}분`;
   };
 
   return (
@@ -285,7 +260,7 @@ function Home() {
         </SectionHeader>
         <MissionGrid>
           {quickMissions.map((mission) => {
-            const tierMeta = tierConfig[mission.tier];
+            const tierMeta = TIER_CONFIG[mission.tier];
             return (
               <MissionCardSmall
                 key={mission.id}
