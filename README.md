@@ -196,30 +196,27 @@ npm run build
 
 ## 9. API 엔드포인트
 
-### 스크린타임
+### 인증 (Auth)
 
-- `GET /api/screen-time/today` - 오늘의 스크린타임 조회
-- `GET /api/screen-time/range` - 기간별 스크린타임 조회
-- `POST /api/screen-time` - 스크린타임 기록
+- `POST /api/auth/register` - 회원가입
+- `POST /api/auth/login` - 로그인
+- `GET /api/auth/me` - 현재 사용자 정보 조회 (JWT 필요)
 
-### 미션
+### 미션 (Missions)
 
-- `GET /api/missions` - 모든 미션 조회
-- `GET /api/missions/:id` - 특정 미션 조회
-- `POST /api/missions/:id/start` - 미션 시작
-- `POST /api/missions/:id/complete` - 미션 완료
-- `GET /api/missions/records` - 미션 기록 조회
+- `GET /api/missions/presets` - AI 생성 미션 목록 조회
+- `GET /api/missions/daily` - 오늘의 미션 조회
+- `POST /api/missions/generate-daily` - 오늘의 미션 수동 생성
+- `POST /api/missions/presets/complete` - 미션 완료
+- `POST /api/missions/presets/fail` - 미션 실패/취소
+- `GET /api/missions/medals` - 획득한 메달 조회 (bronze, silver, gold)
+- `GET /api/missions/recent` - 최근 완료한 미션 조회
 
-### 통계
+---
 
-- `GET /api/statistics/weekly` - 주간 통계
-- `GET /api/statistics/monthly` - 월간 통계
-- `GET /api/statistics/overall` - 전체 통계
+## 10. 주요 기능
 
-### 업적
-
-- `GET /api/achievements` - 모든 업적 조회
-- `GET /api/achievements/user` - 사용자 업적 조회
-- `POST /api/achievements/:id/unlock` - 업적 달성
-
-# DopamineBreaker
+- **AI 미션 생성**: Google Gemini API를 활용하여 매일 다양한 난이도의 미션 자동 생성
+- **미션 타이머**: 미션 진행 중 실시간 타이머와 알림 기능
+- **메달 시스템**: Bronze, Silver, Gold 등급별 미션 완료 시 메달 획득
+- **성취 기록**: 완료한 미션 기록 및 통계 확인

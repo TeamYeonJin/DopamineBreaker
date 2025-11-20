@@ -2,6 +2,7 @@ from datetime import datetime
 from database import db
 
 class Mission(db.Model):
+    """미션 모델"""
     __tablename__ = 'missions'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -12,7 +13,7 @@ class Mission(db.Model):
     category = db.Column(db.String(50))  # physical, mental, health
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationship
+    # MissionRecord와의 관계
     records = db.relationship('MissionRecord', backref='mission', lazy=True)
 
     def __repr__(self):
@@ -31,15 +32,16 @@ class Mission(db.Model):
 
 
 class MissionRecord(db.Model):
+    """미션 완료 기록 모델"""
     __tablename__ = 'mission_records'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # 사용자 ID
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     mission_id = db.Column(db.Integer, db.ForeignKey('missions.id'), nullable=True)
-    preset_mission_id = db.Column(db.Integer, nullable=True)  # 프리셋 미션 ID
+    preset_mission_id = db.Column(db.Integer, nullable=True)  # AI 생성 미션 ID
     tier = db.Column(db.String(20), nullable=True)  # bronze, silver, gold
-    title = db.Column(db.String(100), nullable=True)  # 프리셋 미션 제목
-    description = db.Column(db.Text, nullable=True)  # 프리셋 미션 설명
+    title = db.Column(db.String(100), nullable=True)
+    description = db.Column(db.Text, nullable=True)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     actual_duration = db.Column(db.Integer)  # 실제 소요 시간 (분)
     notes = db.Column(db.Text)
